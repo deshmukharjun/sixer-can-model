@@ -1,0 +1,15 @@
+.can-showcase {
+  /* Fixed + inset so this is a true full-viewport page regardless of the
+     scaffold's #root width/border constraints (see src/index.css). */
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  /* dvh avoids mobile browser chrome causing layout jumps; vh is the fallback. */
+  height: 100vh;
+  height: 100dvh;
+  background: #ffffff;
+}
+
+.can-showcase canvas {
+  touch-action: none;
+}
