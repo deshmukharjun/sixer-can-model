@@ -1,7 +1,7 @@
 import { Suspense, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { ContactShadows, Environment, OrbitControls } from '@react-three/drei'
-import { BrightnessContrast, EffectComposer, HueSaturation } from '@react-three/postprocessing'
+import { EffectComposer, HueSaturation } from '@react-three/postprocessing'
 import { Color } from 'three'
 import { Can } from './Can'
 import type { Flavor } from './Can'
@@ -94,10 +94,9 @@ export function CanShowcase() {
           enableDamping
           dampingFactor={0.08}
         />
-        {/* Punch up the flat studio lighting with a bit more pop/contrast. */}
+        {/* Slight color pop only — brightness/contrast stay at their defaults. */}
         <EffectComposer>
           <HueSaturation saturation={0.05} />
-          <BrightnessContrast contrast={0} brightness={-0.05} />
         </EffectComposer>
       </Canvas>
 
