@@ -6,9 +6,9 @@ import * as THREE from 'three'
 export type Flavor = 'classic' | 'lime' | 'peach'
 
 export const MODEL_PATHS: Record<Flavor, { closed: string; open: string }> = {
-  classic: { closed: '/can-classic-1.glb', open: '/can-classic-open-1.glb' },
-  lime: { closed: '/can-lime-2.glb', open: '/can-lime-open-2.glb' },
-  peach: { closed: '/can-peach-3.glb', open: '/can-peach-open-3.glb' },
+  classic: { closed: '/classic-closed.glb', open: '/classic-opened.glb' },
+  lime: { closed: '/lime-closed.glb', open: '/lime-opened.glb' },
+  peach: { closed: '/peach-closed.glb', open: '/peach-opened.glb' },
 }
 
 const ALL_PATHS = Object.values(MODEL_PATHS).flatMap((p) => [p.closed, p.open])
