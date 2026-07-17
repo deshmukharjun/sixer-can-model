@@ -45,6 +45,19 @@ function prepareModel(scene: THREE.Object3D) {
     if (child instanceof THREE.Mesh) {
       child.castShadow = true
       child.receiveShadow = true
+
+      // The printed label (ingredients/nutrition table) lives on the can body
+      // material. At the source files' default reflectivity, the studio
+      // environment map throws a bright specular band across the label that
+      // washes out the small print. Dial back reflection intensity and add a
+      // little roughness so the surface stays glossy without the hotspot.
+      const materials = Array.isArray(child.material) ? child.material : [child.material]
+      materials.forEach((material) => {
+        if (material instanceof THREE.MeshStandardMaterial) {
+          material.envMapIntensity = Math.min(material.envMapIntensity, 0.8)
+          material.roughness = Math.min(1, material.roughness + 0.04)
+        }
+      })
     }
   })
 

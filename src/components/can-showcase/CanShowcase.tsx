@@ -59,14 +59,14 @@ export function CanShowcase() {
       <Canvas
         shadows
         dpr={[1, 2]}
-        gl={{ antialias: true }}
-        camera={{ position: [0, 0.4, 11], fov: 22 }}
+        gl={{ antialias: true, toneMappingExposure: 5 }}
+        camera={{ position: [0, 0.4, 10], fov: 21 }}
       >
         <BackgroundColor flavor={flavor} />
         <Lighting />
         <Suspense fallback={null}>
           <Can flavor={flavor} isOpen={isOpen} />
-          <Environment preset="studio" environmentIntensity={0.55} />
+          <Environment preset="studio" environmentIntensity={0.3} />
           {/* Baked once (frames=1): the can's motion is a vertical float only
               (rotation is camera-side via OrbitControls), so its footprint on
               the ground plane never changes and a static shadow is enough. */}
@@ -94,9 +94,11 @@ export function CanShowcase() {
           enableDamping
           dampingFactor={0.08}
         />
-        {/* Slight color pop only — brightness/contrast stay at their defaults. */}
+        {/* Slight color pop only — brightness/contrast stay at their defaults.
+            The label-readability fix lives on the can material (see Can.tsx),
+            not here, so this doesn't need to darken the whole scene. */}
         <EffectComposer>
-          <HueSaturation saturation={0.05} />
+          <HueSaturation saturation={0.2} />
         </EffectComposer>
       </Canvas>
 
