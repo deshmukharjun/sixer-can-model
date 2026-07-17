@@ -66,7 +66,7 @@ export function CanShowcase() {
         <Lighting />
         <Suspense fallback={null}>
           <Can flavor={flavor} isOpen={isOpen} />
-          <Environment preset="studio" environmentIntensity={0.9} />
+          <Environment preset="studio" environmentIntensity={0.55} />
           {/* Baked once (frames=1): the can's motion is a vertical float only
               (rotation is camera-side via OrbitControls), so its footprint on
               the ground plane never changes and a static shadow is enough. */}

@@ -10,13 +10,13 @@
 export function Lighting() {
   return (
     <>
-      <ambientLight intensity={0.9} />
+      <ambientLight intensity={0.85} />
 
       {/* Key light: main shadow caster, softened and warmed so it doesn't
           read as a harsh white highlight */}
       <directionalLight
         position={[4, 6, 5]}
-        intensity={1.1}
+        intensity={0.8}
         color="#fff7ee"
         castShadow
         shadow-mapSize={[2048, 2048]}
@@ -30,20 +30,20 @@ export function Lighting() {
       />
 
       {/* Fill light: softer, opposite side, no shadow to avoid double-darkening */}
-      <directionalLight position={[-5, 2, 3]} intensity={0.8} color="#fff7ee" />
+      <directionalLight position={[-5, 2, 3]} intensity={0.7} color="#fff7ee" />
 
       {/* Rim light: from behind, separates the can from the background */}
-      <directionalLight position={[0, 3, -6]} intensity={0.8} color="#eef4ff" />
+      <directionalLight position={[0, 3, -6]} intensity={0.6} color="#eef4ff" />
 
       {/* Side kickers: extra wraparound light so the can reads brightly from every angle */}
-      <pointLight position={[6, 0, 2]} intensity={0.6} color="#fff7ee" />
-      <pointLight position={[-6, 0, -2]} intensity={0.6} color="#fff7ee" />
+      <pointLight position={[6, 0, 2]} intensity={0.45} color="#fff7ee" />
+      <pointLight position={[-6, 0, -2]} intensity={0.45} color="#fff7ee" />
 
-      {/* Top lights: aimed almost straight down onto the lid so its metallic
-          material catches a soft specular highlight instead of reading as
-          flat black, without blowing out into a hard white glare. */}
-      <pointLight position={[0, 8, 1]} intensity={0.9} color="#fff7ee" />
-      <pointLight position={[1.5, 7, -1.5]} intensity={0.6} color="#fff7ee" />
+      {/* Top lights: aimed almost straight down onto the lid, kept gentle so
+          the metallic rim/cap picks up a soft highlight instead of clipping
+          into a blown-out white hot spot. */}
+      <pointLight position={[0, 8, 1]} intensity={0.35} color="#fff7ee" />
+      <pointLight position={[1.5, 7, -1.5]} intensity={0.25} color="#fff7ee" />
     </>
   )
 }
