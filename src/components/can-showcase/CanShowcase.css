@@ -13,3 +13,36 @@
 .can-showcase canvas {
   touch-action: none;
 }
+
+.can-showcase__controls {
+  position: absolute;
+  left: 50%;
+  bottom: 48px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 10;
+}
+
+.can-showcase__button {
+  min-width: 140px;
+  padding: 12px 24px;
+  border: 1px solid #1a1a1a;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #1a1a1a;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.can-showcase__button:hover {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+.can-showcase__button:active {
+  transform: scale(0.96);
+}

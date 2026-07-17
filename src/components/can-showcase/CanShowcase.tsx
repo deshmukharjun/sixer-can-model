@@ -1,9 +1,17 @@
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ContactShadows, Environment, OrbitControls } from '@react-three/drei'
 import { Can } from './Can'
+import type { Flavor } from './Can'
 import { Lighting } from './Lighting'
 import './CanShowcase.css'
+
+const FLAVOR_ORDER: Flavor[] = ['classic', 'lime', 'peach']
+const FLAVOR_LABELS: Record<Flavor, string> = {
+  classic: 'Classic',
+  lime: 'Lime',
+  peach: 'Peach',
+}
 
 // Product-shot showcase: a floating can, centered on a pure white background,
 // that the user can freely orbit by dragging the mouse.
@@ -13,6 +21,14 @@ import './CanShowcase.css'
 // so there is never a moment where the scene is idle enough for on-demand
 // rendering to pay off.
 export function CanShowcase() {
+  const [flavor, setFlavor] = useState<Flavor>('classic')
+  const [isOpen, setIsOpen] = useState(false)
+
+  const handleFlavorSwitch = () => {
+    const nextIndex = (FLAVOR_ORDER.indexOf(flavor) + 1) % FLAVOR_ORDER.length
+    setFlavor(FLAVOR_ORDER[nextIndex])
+  }
+
   return (
     <section className="can-showcase" aria-label="Product showcase">
       <Canvas
@@ -24,7 +40,7 @@ export function CanShowcase() {
         <color attach="background" args={['#ffffff']} />
         <Lighting />
         <Suspense fallback={null}>
-          <Can />
+          <Can flavor={flavor} isOpen={isOpen} />
           <Environment preset="studio" environmentIntensity={0.9} />
           {/* Baked once (frames=1): the can's motion is a vertical float only
               (rotation is camera-side via OrbitControls), so its footprint on
@@ -54,6 +70,19 @@ export function CanShowcase() {
           dampingFactor={0.08}
         />
       </Canvas>
+
+      <div className="can-showcase__controls">
+        <button type="button" className="can-showcase__button" onClick={handleFlavorSwitch}>
+          Flavor: {FLAVOR_LABELS[flavor]}
+        </button>
+        <button
+          type="button"
+          className="can-showcase__button"
+          onClick={() => setIsOpen((prev) => !prev)}
+        >
+          {isOpen ? 'Close Can' : 'Open Can'}
+        </button>
+      </div>
     </section>
   )
 }
