@@ -1,6 +1,8 @@
-import { Suspense, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Suspense, useRef, useState } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { ContactShadows, Environment, OrbitControls } from '@react-three/drei'
+import { BrightnessContrast, EffectComposer, HueSaturation } from '@react-three/postprocessing'
+import { Color } from 'three'
 import { Can } from './Can'
 import type { Flavor } from './Can'
 import { Lighting } from './Lighting'
@@ -13,8 +15,31 @@ const FLAVOR_LABELS: Record<Flavor, string> = {
   peach: 'Peach',
 }
 
-// Product-shot showcase: a floating can, centered on a pure white background,
-// that the user can freely orbit by dragging the mouse.
+// Pale tints that echo each flavor's can color without overpowering the shot.
+const FLAVOR_BACKGROUNDS: Record<Flavor, string> = {
+  classic: '#eaf2fb',
+  lime: '#eef7e2',
+  peach: '#fbeee3',
+}
+
+// Smoothly eases the canvas background toward the current flavor's tint
+// instead of snapping, so switching flavors feels like a color grade shift.
+function BackgroundColor({ flavor }: { flavor: Flavor }) {
+  const target = useRef(new Color(FLAVOR_BACKGROUNDS[flavor]))
+  target.current.set(FLAVOR_BACKGROUNDS[flavor])
+
+  useFrame((state, delta) => {
+    const bg = state.scene.background
+    if (bg instanceof Color) {
+      bg.lerp(target.current, Math.min(1, delta * 4))
+    }
+  })
+
+  return <color attach="background" args={[FLAVOR_BACKGROUNDS.classic]} />
+}
+
+// Product-shot showcase: a floating can, centered on a pale flavor-tinted
+// background, that the user can freely orbit by dragging the mouse.
 //
 // frameloop stays at its default ("always") rather than "demand": the can
 // animates continuously (float + auto-rotate) and responds to drag input,
@@ -37,7 +62,7 @@ export function CanShowcase() {
         gl={{ antialias: true }}
         camera={{ position: [0, 0.4, 11], fov: 22 }}
       >
-        <color attach="background" args={['#ffffff']} />
+        <BackgroundColor flavor={flavor} />
         <Lighting />
         <Suspense fallback={null}>
           <Can flavor={flavor} isOpen={isOpen} />
@@ -69,6 +94,11 @@ export function CanShowcase() {
           enableDamping
           dampingFactor={0.08}
         />
+        {/* Punch up the flat studio lighting with a bit more pop/contrast. */}
+        <EffectComposer>
+          <HueSaturation saturation={0.05} />
+          <BrightnessContrast contrast={0} brightness={-0.05} />
+        </EffectComposer>
       </Canvas>
 
       <div className="can-showcase__controls">
