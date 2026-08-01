@@ -13,6 +13,20 @@ export const MODEL_PATHS: Record<Flavor, { closed: string; open: string }> = {
 
 const ALL_PATHS = Object.values(MODEL_PATHS).flatMap((p) => [p.closed, p.open])
 
+// Surface polish, applied per material type. These are absolute targets rather
+// than adjustments to the authored value on purpose: Object3D.clone() shares
+// materials between clones, so a relative tweak would compound every time a
+// model is prepared and the can would creep glossier on each re-render.
+//
+// The printed body wants to be sharper than the .glb authors it (0.2), so the
+// light panels tighten into crisp vertical strips. The aluminium cap and base
+// must NOT follow it down — at mirror roughness a metal with no environment
+// map reflects the empty black world and the cap turns black. It stays
+// slightly rougher so it picks the panels up as soft silver instead.
+const BODY_ROUGHNESS = 0.12
+const METAL_ROUGHNESS = 0.26
+const METALNESS_CUTOFF = 0.5
+
 // Scales the can down on narrow viewports so it doesn't dominate mobile screens.
 function responsiveScaleFor(width: number) {
   if (width < 480) return 0.7
@@ -46,16 +60,11 @@ function prepareModel(scene: THREE.Object3D) {
       child.castShadow = true
       child.receiveShadow = true
 
-      // The printed label (ingredients/nutrition table) lives on the can body
-      // material. At the source files' default reflectivity, the studio
-      // environment map throws a bright specular band across the label that
-      // washes out the small print. Dial back reflection intensity and add a
-      // little roughness so the surface stays glossy without the hotspot.
       const materials = Array.isArray(child.material) ? child.material : [child.material]
       materials.forEach((material) => {
         if (material instanceof THREE.MeshStandardMaterial) {
-          material.envMapIntensity = Math.min(material.envMapIntensity, 0.8)
-          material.roughness = Math.min(1, material.roughness + 0.04)
+          material.roughness =
+            material.metalness >= METALNESS_CUTOFF ? METAL_ROUGHNESS : BODY_ROUGHNESS
         }
       })
     }
@@ -125,8 +134,8 @@ export function Can({ flavor, isOpen }: CanProps) {
     }
 
     if (floatRef.current) {
-      // Gentle vertical float. Horizontal rotation is driven by OrbitControls
-      // (drag-to-rotate + autoRotate) and, transiently, by the spin above.
+      // Gentle vertical float. Horizontal rotation is driven by the user
+      // dragging OrbitControls and, transiently, by the spin above.
       floatRef.current.position.y = Math.sin(elapsed * 1.1) * 0.15
     }
   })
