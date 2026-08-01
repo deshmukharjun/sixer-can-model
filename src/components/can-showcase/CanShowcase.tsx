@@ -1,6 +1,6 @@
 import { Suspense, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { ContactShadows, Environment, OrbitControls } from '@react-three/drei'
+import { ContactShadows, OrbitControls } from '@react-three/drei'
 import { EffectComposer, HueSaturation } from '@react-three/postprocessing'
 import { Color } from 'three'
 import { Can } from './Can'
@@ -56,17 +56,19 @@ export function CanShowcase() {
 
   return (
     <section className="can-showcase" aria-label="Product showcase">
+      {/* No `shadows`: the rig is all RectAreaLights, which three.js can't
+          shadow-map. Grounding comes from ContactShadows below instead.
+          Exposure is back at 1 — the old value of 5 existed to compensate for
+          a much dimmer directional rig. */}
       <Canvas
-        shadows
         dpr={[1, 2]}
-        gl={{ antialias: true, toneMappingExposure: 5 }}
+        gl={{ antialias: true, toneMappingExposure: 1 }}
         camera={{ position: [0, 0.4, 10], fov: 21 }}
       >
         <BackgroundColor flavor={flavor} />
         <Lighting />
         <Suspense fallback={null}>
           <Can flavor={flavor} isOpen={isOpen} />
-          <Environment preset="studio" environmentIntensity={0.3} />
           {/* Baked once (frames=1): the can's motion is a vertical float only
               (rotation is camera-side via OrbitControls), so its footprint on
               the ground plane never changes and a static shadow is enough. */}
@@ -82,23 +84,21 @@ export function CanShowcase() {
           />
         </Suspense>
         {/* Free drag-to-orbit in any direction; zoom/pan stay off to keep the
-            fixed product-shot framing. autoRotate keeps the can feeling alive
-            whenever the user isn't actively dragging. */}
+            fixed product-shot framing. The can holds whatever angle the user
+            leaves it at. */}
         <OrbitControls
           enableZoom={false}
           enablePan={false}
-          autoRotate
-          autoRotateSpeed={0.8}
           minPolarAngle={0}
           maxPolarAngle={Math.PI}
           enableDamping
           dampingFactor={0.08}
         />
-        {/* Slight color pop only — brightness/contrast stay at their defaults.
-            The label-readability fix lives on the can material (see Can.tsx),
-            not here, so this doesn't need to darken the whole scene. */}
+        {/* Saturation is left alone: the +0.2 pop this used to apply pushed the
+            can's blue toward cyan and away from the brand artwork. The label
+            textures already carry the intended color. */}
         <EffectComposer>
-          <HueSaturation saturation={0.2} />
+          <HueSaturation saturation={0} />
         </EffectComposer>
       </Canvas>
 
