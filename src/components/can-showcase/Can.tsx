@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
+import { DEW_DROPS_REPEAT, getDewDropsMaps } from './dewDropsTexture'
 
 export type Flavor = 'classic' | 'lime' | 'peach'
 
@@ -23,9 +24,21 @@ const ALL_PATHS = Object.values(MODEL_PATHS).flatMap((p) => [p.closed, p.open])
 // must NOT follow it down — at mirror roughness a metal with no environment
 // map reflects the empty black world and the cap turns black. It stays
 // slightly rougher so it picks the panels up as soft silver instead.
-const BODY_ROUGHNESS = 0.12
-const METAL_ROUGHNESS = 0.26
 const METALNESS_CUTOFF = 0.5
+
+// The aluminium cap and base stay this rough no matter which body finish is
+// selected — the finish toggle is a printed-body-only effect, matching the
+// "keep the metal the same" call.
+const METAL_ROUGHNESS = 0.26
+
+export type MaterialFinish = 'old' | 'new'
+
+// Body-only presets so the showcase can A/B the current glossy look against
+// a flatter, more matte pass without touching the .glb assets themselves.
+const BODY_ROUGHNESS: Record<MaterialFinish, number> = {
+  old: 0.12,
+  new: 0.4,
+}
 
 // Scales the can down on narrow viewports so it doesn't dominate mobile screens.
 function responsiveScaleFor(width: number) {
@@ -46,10 +59,46 @@ function useResponsiveScale() {
   return scale
 }
 
+// Upgrades a printed-body material to a MeshPhysicalMaterial with a clearcoat
+// layer driven by the procedural droplet maps, carrying over every property
+// prepareModel already relies on (map, color, roughness, etc). Kept separate
+// from the plain MeshStandardMaterial path so the metal cap/base — which
+// never gets droplets — stays untouched and cheap to render.
+function applyDewDrops(material: THREE.MeshStandardMaterial): THREE.MeshPhysicalMaterial {
+  const { normalMap, maskMap } = getDewDropsMaps()
+  ;[normalMap, maskMap].forEach((tex) => tex.repeat.copy(DEW_DROPS_REPEAT))
+
+  // Not physical.copy(material): MeshPhysicalMaterial.copy() assumes its
+  // source is also a physical material and unconditionally copies
+  // clearcoat-only fields (e.g. clearcoatNormalScale) off it — which a plain
+  // MeshStandardMaterial doesn't have, crashing on the read. Carry over only
+  // the base properties prepareModel/the .glb actually set instead.
+  const physical = new THREE.MeshPhysicalMaterial({
+    map: material.map,
+    color: material.color,
+    roughness: material.roughness,
+    metalness: material.metalness,
+    normalMap: material.normalMap,
+    aoMap: material.aoMap,
+    emissive: material.emissive,
+    emissiveMap: material.emissiveMap,
+    transparent: material.transparent,
+    opacity: material.opacity,
+    side: material.side,
+  })
+  physical.clearcoat = 1
+  physical.clearcoatRoughness = 0.06
+  physical.clearcoatNormalMap = normalMap
+  physical.clearcoatNormalScale = new THREE.Vector2(1, 1)
+  physical.clearcoatMap = maskMap
+  return physical
+}
+
 // Re-pivots a model to its own bounding-box center so it's perfectly centered
 // regardless of how the source file authored its origin, and normalizes it to
 // a consistent on-screen size no matter the source scale.
-function prepareModel(scene: THREE.Object3D) {
+function prepareModel(scene: THREE.Object3D, finish: MaterialFinish, dewDrops: boolean) {
+  const bodyRoughness = BODY_ROUGHNESS[finish]
   const cloned = scene.clone(true)
   const box = new THREE.Box3().setFromObject(cloned)
   const center = box.getCenter(new THREE.Vector3())
@@ -61,12 +110,18 @@ function prepareModel(scene: THREE.Object3D) {
       child.receiveShadow = true
 
       const materials = Array.isArray(child.material) ? child.material : [child.material]
-      materials.forEach((material) => {
-        if (material instanceof THREE.MeshStandardMaterial) {
-          material.roughness =
-            material.metalness >= METALNESS_CUTOFF ? METAL_ROUGHNESS : BODY_ROUGHNESS
-        }
+      const nextMaterials = materials.map((material) => {
+        if (!(material instanceof THREE.MeshStandardMaterial)) return material
+
+        const isBody = material.metalness < METALNESS_CUTOFF
+        material.roughness = isBody ? bodyRoughness : METAL_ROUGHNESS
+
+        // Droplets only make sense on the printed body, not the bare
+        // aluminium cap/base.
+        return isBody && dewDrops ? applyDewDrops(material) : material
       })
+
+      child.material = Array.isArray(child.material) ? nextMaterials : nextMaterials[0]
     }
   })
 
@@ -87,19 +142,21 @@ function easeInOutCubic(t: number) {
 interface CanProps {
   flavor: Flavor
   isOpen: boolean
+  finish: MaterialFinish
+  dewDrops: boolean
 }
 
-export function Can({ flavor, isOpen }: CanProps) {
+export function Can({ flavor, isOpen, finish, dewDrops }: CanProps) {
   const targetPath = isOpen ? MODEL_PATHS[flavor].open : MODEL_PATHS[flavor].closed
   const gltfs = useGLTF(ALL_PATHS)
 
   const models = useMemo(() => {
     const map = new Map<string, { object: THREE.Object3D; baseScale: number }>()
     ALL_PATHS.forEach((path, i) => {
-      map.set(path, prepareModel(gltfs[i].scene))
+      map.set(path, prepareModel(gltfs[i].scene, finish, dewDrops))
     })
     return map
-  }, [gltfs])
+  }, [gltfs, finish, dewDrops])
 
   const [displayedPath, setDisplayedPath] = useState(targetPath)
   const floatRef = useRef<THREE.Group>(null)

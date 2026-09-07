@@ -4,7 +4,7 @@ import { ContactShadows, OrbitControls } from '@react-three/drei'
 import { EffectComposer, HueSaturation } from '@react-three/postprocessing'
 import { Color } from 'three'
 import { Can } from './Can'
-import type { Flavor } from './Can'
+import type { Flavor, MaterialFinish } from './Can'
 import { Lighting } from './Lighting'
 import './CanShowcase.css'
 
@@ -48,10 +48,16 @@ function BackgroundColor({ flavor }: { flavor: Flavor }) {
 export function CanShowcase() {
   const [flavor, setFlavor] = useState<Flavor>('classic')
   const [isOpen, setIsOpen] = useState(false)
+  const [finish, setFinish] = useState<MaterialFinish>('old')
+  const [dewDrops, setDewDrops] = useState(false)
 
   const handleFlavorSwitch = () => {
     const nextIndex = (FLAVOR_ORDER.indexOf(flavor) + 1) % FLAVOR_ORDER.length
     setFlavor(FLAVOR_ORDER[nextIndex])
+  }
+
+  const handleFinishSwitch = () => {
+    setFinish((prev) => (prev === 'old' ? 'new' : 'old'))
   }
 
   return (
@@ -68,7 +74,7 @@ export function CanShowcase() {
         <BackgroundColor flavor={flavor} />
         <Lighting />
         <Suspense fallback={null}>
-          <Can flavor={flavor} isOpen={isOpen} />
+          <Can flavor={flavor} isOpen={isOpen} finish={finish} dewDrops={dewDrops} />
           {/* Baked once (frames=1): the can's motion is a vertical float only
               (rotation is camera-side via OrbitControls), so its footprint on
               the ground plane never changes and a static shadow is enough. */}
@@ -101,6 +107,19 @@ export function CanShowcase() {
           <HueSaturation saturation={0} />
         </EffectComposer>
       </Canvas>
+
+      <div className="can-showcase__controls can-showcase__controls--top">
+        <button type="button" className="can-showcase__button" onClick={handleFinishSwitch}>
+          {finish === 'old' ? 'Glossy Finish' : 'Matte Finish'}
+        </button>
+        <button
+          type="button"
+          className="can-showcase__button"
+          onClick={() => setDewDrops((prev) => !prev)}
+        >
+          {dewDrops ? 'Remove Dew Drops' : 'Add Dew Drops'}
+        </button>
+      </div>
 
       <div className="can-showcase__controls">
         <button type="button" className="can-showcase__button" onClick={handleFlavorSwitch}>

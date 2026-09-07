@@ -24,6 +24,11 @@
   z-index: 10;
 }
 
+.can-showcase__controls--top {
+  top: 48px;
+  bottom: auto;
+}
+
 .can-showcase__button {
   min-width: 140px;
   padding: 12px 24px;
