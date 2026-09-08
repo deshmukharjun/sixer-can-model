@@ -6,6 +6,7 @@ import { Color } from 'three'
 import { Can } from './Can'
 import type { Flavor, MaterialFinish } from './Can'
 import { Lighting } from './Lighting'
+import type { LightColor } from './Lighting'
 import './CanShowcase.css'
 
 const FLAVOR_ORDER: Flavor[] = ['classic', 'lime', 'peach']
@@ -50,6 +51,7 @@ export function CanShowcase() {
   const [isOpen, setIsOpen] = useState(false)
   const [finish, setFinish] = useState<MaterialFinish>('old')
   const [dewDrops, setDewDrops] = useState(false)
+  const [lightColor, setLightColor] = useState<LightColor>('white')
 
   const handleFlavorSwitch = () => {
     const nextIndex = (FLAVOR_ORDER.indexOf(flavor) + 1) % FLAVOR_ORDER.length
@@ -72,7 +74,7 @@ export function CanShowcase() {
         camera={{ position: [0, 0.4, 10], fov: 21 }}
       >
         <BackgroundColor flavor={flavor} />
-        <Lighting />
+        <Lighting lightColor={lightColor} />
         <Suspense fallback={null}>
           <Can flavor={flavor} isOpen={isOpen} finish={finish} dewDrops={dewDrops} />
           {/* Baked once (frames=1): the can's motion is a vertical float only
@@ -109,6 +111,13 @@ export function CanShowcase() {
       </Canvas>
 
       <div className="can-showcase__controls can-showcase__controls--top">
+        <button
+          type="button"
+          className="can-showcase__button"
+          onClick={() => setLightColor((prev) => (prev === 'white' ? 'yellow' : 'white'))}
+        >
+          {lightColor === 'white' ? 'White Light' : 'Yellow Light'}
+        </button>
         <button type="button" className="can-showcase__button" onClick={handleFinishSwitch}>
           {finish === 'old' ? 'Glossy Finish' : 'Matte Finish'}
         </button>

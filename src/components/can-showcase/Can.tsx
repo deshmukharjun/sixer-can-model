@@ -89,7 +89,7 @@ function applyDewDrops(material: THREE.MeshStandardMaterial): THREE.MeshPhysical
   physical.clearcoat = 1
   physical.clearcoatRoughness = 0.06
   physical.clearcoatNormalMap = normalMap
-  physical.clearcoatNormalScale = new THREE.Vector2(1, 1)
+  physical.clearcoatNormalScale = new THREE.Vector2(1.6, 1.6)
   physical.clearcoatMap = maskMap
   return physical
 }

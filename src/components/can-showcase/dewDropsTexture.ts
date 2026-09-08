@@ -13,13 +13,13 @@ import * as THREE from 'three'
 // one uniform one.
 
 const SIZE = 512
-const BEAD_COUNT = 150
-const BEAD_MIN_RADIUS = 3
-const BEAD_MAX_RADIUS = 8.5
+const BEAD_COUNT = 120
+const BEAD_MIN_RADIUS = 5
+const BEAD_MAX_RADIUS = 13
 const DRIP_COUNT = 10
-const DRIP_HEAD_MIN_RADIUS = 8
-const DRIP_HEAD_MAX_RADIUS = 14
-const BUMP_STRENGTH = 1.3
+const DRIP_HEAD_MIN_RADIUS = 12
+const DRIP_HEAD_MAX_RADIUS = 20
+const BUMP_STRENGTH = 1.7
 // Fraction of a droplet's radius that stays fully domed before the profile
 // rolls into the dark contact-line ring at the rim — real drops have a
 // clear "shoulder" rather than falling off linearly from the center.
@@ -177,8 +177,8 @@ function buildMaskMap(droplets: Droplet[]): THREE.CanvasTexture {
     // which is what read as a soft, characterless blob.
     const gradient = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.r)
     gradient.addColorStop(0, 'rgba(255,255,255,1)')
-    gradient.addColorStop(0.55, 'rgba(255,255,255,0.95)')
-    gradient.addColorStop(0.8, 'rgba(210,210,210,0.75)')
+    gradient.addColorStop(0.55, 'rgba(255,255,255,1)')
+    gradient.addColorStop(0.8, 'rgba(220,220,220,0.9)')
     gradient.addColorStop(1, 'rgba(255,255,255,0)')
     ctx.fillStyle = gradient
     ctx.beginPath()
@@ -212,4 +212,4 @@ export function getDewDropsMaps() {
 // height. Higher than the bead/drip counts alone would suggest so each
 // droplet reads at a believable few-millimeter scale rather than dominating
 // the label.
-export const DEW_DROPS_REPEAT = new THREE.Vector2(5, 7)
+export const DEW_DROPS_REPEAT = new THREE.Vector2(3.5, 5)

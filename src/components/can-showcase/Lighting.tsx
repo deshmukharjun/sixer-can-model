@@ -23,7 +23,14 @@ const INTENSITY = 1.8
 const RADIUS = 3.2 // distance of every panel from the can
 const SIDE_SIZE: [width: number, height: number] = [2.8, 5.5] // the "long" panels
 const CAP_SIZE: [width: number, height: number] = [2.6, 2.6] // top + bottom panels
-const COLOR = '#ffffff' // Blender default 6500 K white
+
+export type LightColor = 'white' | 'yellow'
+
+// Same panel placement/intensity either way — only the emitted color swaps.
+const LIGHT_COLORS: Record<LightColor, string> = {
+  white: '#ffffff', // Blender default 6500 K white
+  yellow: '#fdfceb', // near-white, faintest hint of yellow
+}
 
 // Side panels: azimuth in degrees around Y, measured from the default camera
 // axis (+Z), with a per-panel multiplier on INTENSITY.
@@ -46,7 +53,9 @@ const CAP_SCALE = 1.6
 
 const DEG = Math.PI / 180
 
-export function Lighting() {
+export function Lighting({ lightColor = 'white' }: { lightColor?: LightColor }) {
+  const color = LIGHT_COLORS[lightColor]
+
   return (
     <>
       {SIDE_PANELS.map(({ deg, scale }) => {
@@ -62,7 +71,7 @@ export function Lighting() {
             width={SIDE_SIZE[0]}
             height={SIDE_SIZE[1]}
             intensity={INTENSITY * scale}
-            color={COLOR}
+            color={color}
           />
         )
       })}
@@ -74,7 +83,7 @@ export function Lighting() {
         width={CAP_SIZE[0]}
         height={CAP_SIZE[1]}
         intensity={INTENSITY * CAP_SCALE}
-        color={COLOR}
+        color={color}
       />
 
       {/* Floor panel, firing straight up into the base rim. */}
@@ -84,7 +93,7 @@ export function Lighting() {
         width={CAP_SIZE[0]}
         height={CAP_SIZE[1]}
         intensity={INTENSITY * CAP_SCALE}
-        color={COLOR}
+        color={color}
       />
     </>
   )
